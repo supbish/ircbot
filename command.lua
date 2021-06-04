@@ -28,11 +28,20 @@ function command:define(word) -- Word to define.
 	return self:fetch("https://www.dictionary.com/browse/" .. word):match "definition, (.-) See more."
 end
 
+--- IMDB lookup.
 function command:imdb(query)
     local list = self:fetch("https://www.imdb.com/find?q=" .. query)
-    local link = list and list:match("href=\"(/title/[^/]+/)%?")
+    local link = list and list:match "href=\"(/title/[^/]+/)%?"
     local page = link and self:fetch("https://www.imdb.com/" .. link)
-    return page and page:match '<meta name="description" content="([^"]+)'
+    return page and page:match 'meta name[%p%s]+description[%p%s]+content[%p%s]+([^"]+)'
+end
+
+--- Discogs lookup.
+function command:discogs(query)
+    local list = self:fetch("https://www.discogs.com/search/?q=" .. query)
+    local link = list and list:match '<a href="([^"]+)" class="search_result_title"'
+    local page = link and self:fetch("https://www.discogs.com/" .. link)
+    return page and page:match '<div class="readmore" id="profile">%s+([^\n]+)'
 end
 
 --- Roll some dice.
