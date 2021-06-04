@@ -28,6 +28,13 @@ function command:define(word) -- Word to define.
 	return self:fetch("https://www.dictionary.com/browse/" .. word):match "definition, (.-) See more."
 end
 
+function command:imdb(query)
+    local list = self:fetch("https://www.imdb.com/find?q=" .. query)
+    local link = list and list:match("href=\"(/title/[^/]+/)%?")
+    local page = link and self:fetch("https://www.imdb.com/" .. link)
+    return page and page:match '<meta name="description" content="([^"]+)'
+end
+
 --- Roll some dice.
 function command:roll(dice) -- Number of dice and sides. For example 2d6 to roll two six-sided dice.
 	local d, s = dice:match "^(%d+)d(%d+)$"
@@ -77,6 +84,7 @@ local eightballResponses = {
 	"very doubtful",
 }
 
+--- Magic 8-ball.
 function command:eightball()
 	return eightballResponses[math.random(#eightballResponses)]
 end
@@ -104,5 +112,12 @@ function command:die()
 	os.exit()
 end
 
-return command
+--- Evaluate Lua code.
+function command:eval(code) -- Lua code to evaluate.
+	if self.bot.owner ~= self.nick then return end
+    return (_G.load or _G.loadstring)(
+        "self, command, bot = ...; " .. code)(
+            self, command, self.bot)
+end
 
+return command

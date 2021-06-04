@@ -3,4 +3,3 @@
 --- @script launch
 
 require "bot" :init(...)
-
